@@ -1,4 +1,3 @@
-import { firestore } from '../../../lib/firebaseadmin'
 import {GetServerSideProps, InferGetServerSidePropsType} from 'next'
 import Image from 'next/image'
 import { boardRepo } from '../../../lib/firebaseadmin'
@@ -12,7 +11,9 @@ import { BoardMetadata } from '../../_app'
 import BoardTitle from '../../../components/BoardTitle'
 import Router from 'next/router'
 import { getDownloadURL, ref } from 'firebase/storage'
-import { storage } from '../../../lib/firebase'
+import { firestore, storage } from '../../../lib/firebase'
+import _ from 'lodash'
+import { collection, getCountFromServer, query, where } from 'firebase/firestore'
 
 /*export function getStaticPaths(){
     return {
@@ -65,10 +66,22 @@ export async function getServerSideProps(context) {
 
 const Thread = ({current,thread} : {current: string,thread: ThreadInfo}) => {
     const [downloadurl,setdownloadurl] = useState<string | null>(null)
+    const [replies,setReplies] = useState<number>(0)
+    const [imageReplies,setImageReplies] = useState<number>(0)
 
     useEffect(() => {
         getDownloadURL(ref(storage,`/thumbnails/${thread.head.image}`))
             .then(setdownloadurl)
+
+        getCountFromServer(collection(firestore,`/Boards/${current}/Threads/${thread.head.id}/Posts`))
+            .then(snap => setReplies(snap.data().count - 1))
+
+        getCountFromServer(
+            query(
+                collection(firestore,`/Boards/${current}/Threads/${thread.head.id}/Posts`),
+                where('image','!=',null)
+            ))
+            .then(snap => setImageReplies(snap.data().count - 1))
     },[thread])
 
     return (
@@ -80,6 +93,9 @@ const Thread = ({current,thread} : {current: string,thread: ThreadInfo}) => {
                     style={{width:"100%",cursor:"pointer"}}
                 />
             </Link>
+            <div>
+                R: {replies} / I: {imageReplies}
+            </div>
             <div className={styles.title}>
                 {thread.title}
             </div>
@@ -96,8 +112,11 @@ const CreateNewThread = ({board} : {board: BoardMetadata}) => {
     const [comment,setcomment] = useState<string>("")
     const [file,setfile] = useState<File | null>(null)
     const [showerr,setshowerr] = useState<string>("")
+    const [disablePost,setDisablePost] = useState<boolean>(false)
 
     const submitThread = async () => {
+        setDisablePost(true)
+
         const formData = new FormData()
         formData.append('username',username)
         formData.append('board',board.id)
@@ -106,6 +125,7 @@ const CreateNewThread = ({board} : {board: BoardMetadata}) => {
 
         if(!file){
             setshowerr("please upload thumbnail good sir")
+            setDisablePost(false)
             return
         }
 
@@ -120,10 +140,12 @@ const CreateNewThread = ({board} : {board: BoardMetadata}) => {
                 console.log('success')
                 setshowerr("")
                 Router.push(`/boards/${board.id}/thread/${tid.message}`)
+                setDisablePost(false)
             })
             .catch(err => {
                 console.log('error',err)
                 setshowerr("server error")
+                setDisablePost(false)
             })
     }
 
@@ -133,7 +155,7 @@ const CreateNewThread = ({board} : {board: BoardMetadata}) => {
             <div className={`${styles.label} ${styles.namelabel}`}>Name</div>
             <input type="text" onChange={ev => setusername(ev.target.value)} placeholder='Anonymous' className={`${styles.input} ${styles.nameinput}`} />
             <div className={`${styles.label} ${styles.subjectlabel}`}>Subject</div>
-            <input type="text" onChange={ev => setsubject(ev.target.value)} className={`${styles.input} ${styles.subjectinput}`} />
+            <input type="text" onChange={ev => setsubject(ev.target.value)} className={`${styles.input} ${styles.subjectinput}`} autoFocus />
             <div className={`${styles.label} ${styles.commentlabel}`}>Comment</div>
             <textarea onChange={ev => setcomment(ev.target.value)} className={`${styles.input} ${styles.commentinput}`} />
             <div className={`${styles.label} ${styles.filelabel}`}>File</div>
@@ -142,7 +164,7 @@ const CreateNewThread = ({board} : {board: BoardMetadata}) => {
                 {showerr}
             </div>
 
-            <button onClick={submitThread} className={styles.postbtn}>Post</button>
+            <button disabled={disablePost} onClick={_.debounce(submitThread,2000)} className={styles.postbtn} style={{cursor: !disablePost ? 'auto' : 'wait'}}>Post</button>
         </div>
     )
 }

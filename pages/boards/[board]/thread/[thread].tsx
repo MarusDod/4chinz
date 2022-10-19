@@ -15,6 +15,7 @@ import BoardTitle from "../../../../components/BoardTitle"
 import Router from "next/router"
 import { genUID } from "../../../../lib/helpers"
 import { renderToHTML } from "next/dist/server/render"
+import _ from 'lodash'
 
 type ThreadProps = {
     board: BoardMetadata,
@@ -125,7 +126,7 @@ const PostContainer = ({board,getPost,hover,post,main}: {board: string,hover?: b
             </div>
             <div className={styles.timestamp}>
             {imgref.current && (
-                <span>File: <a target="_blank" rel="noreferrer" href={downloadurl}>{metadata.customMetadata['displayName']}</a> ({metadata.size / 1000}KB {imgref.current['width']}x{imgref.current['height']})</span>
+                <span>File: <a target="_blank" rel="noreferrer" href={downloadurl}>{metadata.customMetadata['displayName']}</a> ({Math.floor(metadata.size / 1000)}KB {imgref.current['width']}x{imgref.current['height']})</span>
             )}
             </div>
             <div className={styles.content}>
@@ -145,6 +146,7 @@ const PostReply = ({hide,board,tid} : {hide: () => void,board: string,tid: strin
     const [showerr,setshowerr] = useState<boolean>(false)
     const [name,setname] = useState<string>("")
     const [file,setfile] = useState<File | null>(null)
+    const [disablePost,setDisablePost] = useState<boolean>(false)
     const [comment,setComment] = useContext(CommentContext)
 
     const topref = useRef()
@@ -198,6 +200,7 @@ const PostReply = ({hide,board,tid} : {hide: () => void,board: string,tid: strin
     },[])
 
     const submit = () => {
+        setDisablePost(true)
         const formData = new FormData()
         formData.append('username',name)
         formData.append('board',board)
@@ -208,6 +211,7 @@ const PostReply = ({hide,board,tid} : {hide: () => void,board: string,tid: strin
             formData.append('thumbnail',file,file.name)
         }
 
+
         fetch('/api/newpost',{
             method: 'POST',
             body: formData
@@ -215,6 +219,7 @@ const PostReply = ({hide,board,tid} : {hide: () => void,board: string,tid: strin
             .then(() => {
                 console.log('success')
                 setshowerr(false)
+                setDisablePost(false)
                 setComment("")
                 setname("")
                 setfile(null)
@@ -222,6 +227,7 @@ const PostReply = ({hide,board,tid} : {hide: () => void,board: string,tid: strin
             })
             .catch(err => {
                 console.error('error',err)
+                setDisablePost(false)
                 setshowerr(true)
             })
     }
@@ -234,10 +240,10 @@ const PostReply = ({hide,board,tid} : {hide: () => void,board: string,tid: strin
             </div>
             <input value={name} onChange={ev => setname(ev.target.value)} className={styles.title} type="text" placeholder="Name" />
             <input className={styles.title} type="text" placeholder="Options" />
-            <textarea value={comment} onChange={ev => setComment(ev.target.value)} className={`${styles.title} ${styles.comment}`} placeholder="Comment" />
+            <textarea autoFocus value={comment} onChange={ev => setComment(ev.target.value)} className={`${styles.title} ${styles.comment}`} placeholder="Comment" />
             <div style={{display:'flex',margin:0,justifySelf:"flex-end",justifyContent:'space-between',fontSize:"1.5rem",color:'grey'}}>
                 <input onChange={ev => setfile(ev.target.files[0])} type="file" accept="image/jpeg, image/jpg, image/png" />
-                <button onClick={submit}>Post</button>
+                <button disabled={disablePost} onClick={_.debounce(submit,1000)}>Post</button>
             </div>
             <div className={styles.error} style={{display: showerr ? 'inline-block':'none'}}>
                 err

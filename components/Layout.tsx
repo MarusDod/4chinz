@@ -9,12 +9,12 @@ const NavBoard = ({boards,style}: {boards: BoardMetadata[],style?: any}) => {
     return (
         <div className={styles.nav} style={style ?? {}}>
             <div>{'[ '} {boards.map((b,index) => 
-                (<>
+                (<Fragment key={b.id}>
                     {index === 0 ? '':' / '} 
                     <span className={styles.navitem} key={b.id}>
                         <Link href={`/boards/${b.id}`}>{b.id}</Link>
                     </span>
-                </>))}
+                </Fragment>))}
                 {' ]'}
             </div>
             
