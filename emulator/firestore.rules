@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /variables/{variable} {
+      allow read, write: if
+          false;
+    }
+
+    match /Boards/{board=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

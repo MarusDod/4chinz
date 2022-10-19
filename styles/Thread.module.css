@@ -1,0 +1,164 @@
+.reply {
+    position: fixed;
+    z-index: 1;
+    overflow: auto;
+    background-color: salmon;
+    border: 1px solid black;
+    font-size: 1.3rem;
+    top:25%;
+
+    min-width: minmax(calc(90%),400px);
+    min-height: 500px;
+    display: flex;
+    gap: .2rem;
+    flex-flow: column nowrap;
+    justify-content: stretch;
+    align-items: stretch;
+}
+
+.reply > .touchreply{
+    text-align:center;
+    background-color:salmon;
+    user-select: none;
+}
+
+.reply > .touchreply:hover {
+    cursor:move;
+}
+
+.reply > .title {
+    color: black;
+    font-size: 1rem;
+    background-color: white;
+}
+
+.reply > .comment {
+    min-height:200px;
+    min-width:inherit;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.reply > .error {
+    display:none;
+    background-color: red;
+    color: white;
+}
+
+.reply > .title::placeholder {
+    color: black;
+    opacity:0.6;
+}
+
+.postcount {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    width: 99%;
+    padding: 0px 2em;
+    border-style: solid; 
+    border-width: 1px 0;
+    border-color: rgb(6, 6, 6,.2);
+
+}
+
+.postreplybtn {
+    color: #81a2be;
+    margin: .5rem auto;
+    font-size: 1rem;
+}
+
+.postreply {
+    color: blue;
+    text-decoration: underline;
+    margin: 0 .2rem;
+    font-size: 0.9rem;
+}
+
+.postreply:hover,.postreplybtn:hover {
+    cursor: pointer;
+    color:blue;
+}
+
+.postcontainer {
+    padding: .5em;
+    margin: 0 1em;
+    max-width: 100%;
+    gap:.5em;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-self: flex-start;
+
+    background-color:#e9ced1 ;
+}
+
+.mainpostcontainer {
+    background-color: rgb(0,0,0,0);
+    width: 90%;
+}
+
+.postcontainer .timestamp {
+    display: inline;
+}
+
+.postcontainer .replynumber{
+    text-decoration: underline;
+    color: blue;
+    cursor: pointer;
+    margin: 0 3px;
+}
+
+.postcontainer .content {
+    display:inline-block;
+    justify-self: flex-end;
+
+    overflow: hidden;
+}
+
+.postcontainer .image{
+    display: flex;
+    margin: 0 1rem 0 0;
+    flex-direction: column;
+    float: left;
+    cursor: pointer;;
+}
+
+.postcontainer .title {
+    word-wrap: break-word;
+    white-space: normal;
+    font-size: 1.1rem;
+    margin-right: .5rem;
+    font-weight: bold;
+}
+
+.postcontainer .text {
+    float:none;
+    padding: 1rem 0 1rem 2rem;
+    display:block;
+    font-family: arial,helvetica,sans-serif;
+    font-size: 1rem;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+
+.tooltip {
+    position: relative;
+}
+
+.tooltiptext {
+    visibility: hidden;
+    position: absolute;
+    background-color: black;
+    color:white;
+    z-index: 1;
+    padding:5px;
+    top:-2rem;
+    left: -1rem;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
