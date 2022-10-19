@@ -40,6 +40,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     let newpost = new Post()
     newpost.id = postid
     newpost.content = comment
+            .replaceAll(/</g, "&lt;")
+            .replaceAll(/>/g, "&gt;");
     newpost.title = subject
     newpost.isThread = true
     newpost.replies = []

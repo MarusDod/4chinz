@@ -7,9 +7,8 @@ import { boardRepo } from "../../../../lib/firebaseadmin"
 import { Board, Post, Thread } from "../../../../lib/models"
 import { BoardMetadata } from "../../../_app"
 import styles from '../../../../styles/Thread.module.css'
-import Link from "next/link"
 import { firestore, storage } from "../../../../lib/firebase"
-import { DOMElement, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { FullMetadata, getDownloadURL, getMetadata, ref } from "firebase/storage"
 import { collection, onSnapshot, Query, query, Timestamp, where } from "firebase/firestore"
 import BoardTitle from "../../../../components/BoardTitle"
@@ -40,7 +39,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext): Pr
     console.log('tid',tid)
     console.log('board',boardName)
 
-    const board = await boardRepo.findById(boardName)
+    const board: Board = await boardRepo.findById(boardName)
     const thread: Thread = await board.threads.findById(tid)
     const posts: Post[] = await thread.posts.find()
 
@@ -67,7 +66,10 @@ const PostContainer = ({board,post,main}: {board: string,post: Post,main: boolea
     const imgref = useRef()
 
     const parseContent = (content : string) => {
-        const strcolor = content.replace(/>>\d+/g, match=> `<a style="color:blue" href="#${match.substring(2)}">${match}</a>`)
+        console.log('content',content)
+        const strcolor = content
+            .replace(/&gt;&gt;\d+/g, match=> `<a style="color:blue" href="#${match.substring(8)}">${match}</a>`)
+            .replaceAll("\r\n","<br />")
 
         return strcolor
     }
@@ -247,8 +249,22 @@ export default function Page({data: {board,title,posts}}: {data: ThreadProps}){
                 }
 
                 snap.docChanges().forEach(c => {
-                    if(c.type == 'added'){
-                        setPostState((postState: Post[]) => ([...postState,c.doc.data() as Post]))
+                    const data: Post = c.doc.data() as Post
+
+                    switch(c.type){
+                        case 'added':
+                            console.log(data)
+                            setPostState((postState: Post[]) => ([...postState,data as Post]))
+                            break;
+                        case 'modified':
+                            setPostState((posts: Post[]) =>
+                                posts.map(p => p.id === data.id ? data : p)
+                            )
+                            break;
+                        case 'removed':
+                            setPostState((posts: Post[]) =>
+                                posts.filter(p => p.id != data.id)
+                            )
                     }
                 })
         },error => console.error(error))

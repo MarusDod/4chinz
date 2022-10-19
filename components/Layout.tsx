@@ -38,7 +38,8 @@ export const useBoards = (): BoardMetadata[] => {
 
         const item = loadBoardsStorage()
         if(item){
-            dispatch(setBoards(boards))
+            dispatch(setBoards(item))
+            return
         }
 
         fetch('/api/boards')

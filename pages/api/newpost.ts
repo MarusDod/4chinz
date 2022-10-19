@@ -21,8 +21,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const username: string = fields.username
     const comment: string = fields.comment
+            .replaceAll(/</g, "&lt;")
+            .replaceAll(/>/g, "&gt;");
     const thumbnail: formidable.File | undefined = files.thumbnail
 
+    console.log(comment)
 
     const tid = fields.tid;
     const board: string = fields.board;
@@ -53,7 +56,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const thread =(await (await boardRepo.findById(board)).threads.findById(tid));
 
-    const replies = (comment.match(/>>(\d+)/g) ?? []).map(s => s.substring(2))
+    const replies = (comment.match(/&gt;&gt;(\d+)/g) ?? []).map(s => s.substring(8))
 
     if(replies.length !== 0){
         const replied = (await thread.posts.whereIn('id',replies).find()).map((p: Post) => {

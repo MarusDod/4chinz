@@ -36,7 +36,7 @@ const posts: Array<Post> = [
                     content: "title",
                     image: "0",
                     isThread: true,
-                    replies: ['1'],
+                    replies: [],
                     id: '0'
                 },
                 {
