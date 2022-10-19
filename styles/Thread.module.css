@@ -7,13 +7,26 @@
     font-size: 1.3rem;
     top:25%;
 
-    min-width: minmax(calc(90%),400px);
-    min-height: 500px;
+    min-width: 400px;
+    min-height: 300px;
+
     display: flex;
     gap: .2rem;
     flex-flow: column nowrap;
     justify-content: stretch;
     align-items: stretch;
+}
+
+@media screen and (max-width:400px) {
+    .reply {
+        min-width: 90vw;
+    }
+}
+
+@media screen and (max-height:550px) {
+    .reply {
+        min-height: 60vh;
+    }
 }
 
 .reply > .touchreply{
@@ -35,6 +48,7 @@
 .reply > .comment {
     min-height:200px;
     min-width:inherit;
+    margin-bottom: 0;
     overflow-y: scroll;
     overflow-x: hidden;
 }

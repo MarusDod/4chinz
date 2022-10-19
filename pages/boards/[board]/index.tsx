@@ -37,12 +37,14 @@ export async function getServerSideProps(context) {
 
     const board = await boardRepo.findById(boardName)
 
-    const threads: ThreadInfo[] = await Promise.all((await board.threads.find()).map(async t => ({
-            title: t.title ?? null,
-            head: JSON.parse(JSON.stringify(await t.posts.findById(t.id)))
-        })))
+    let threads: ThreadInfo[] = []
 
-    console.log(threads)
+    if(!!board.threads){
+        threads = await Promise.all((await board.threads.find()).map(async t => ({
+                title: t.title ?? null,
+                head: JSON.parse(JSON.stringify(await t.posts.findById(t.id)))
+        })))
+    }
 
     const data: BoardData = {
         board: {

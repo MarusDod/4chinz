@@ -54,7 +54,11 @@ const boardRepo = getRepository(Board);
 
 (async () => {
     boards.forEach((board: Board) => {
-        boardRepo.create(board)
+        const newboard = new Board()
+        newboard.category = board.category
+        newboard.id = board.id
+        newboard.name = board.name
+        boardRepo.create(newboard)
     })
 })()
 

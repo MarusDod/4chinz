@@ -216,7 +216,6 @@ const PostReply = ({hide,referee,board,tid} : {hide: () => void,referee?: string
             <input value={name} onChange={ev => setname(ev.target.value)} className={styles.title} type="text" placeholder="Name" />
             <input className={styles.title} type="text" placeholder="Options" />
             <textarea value={comment} onChange={ev => setcomment(ev.target.value)} className={`${styles.title} ${styles.comment}`} placeholder="Comment" />
-            <div style={{backgroundColor:'grey',height:"200px"}}>.</div>
             <div style={{display:'flex',margin:0,justifySelf:"flex-end",justifyContent:'space-between',fontSize:"1.5rem",color:'grey'}}>
                 <input onChange={ev => setfile(ev.target.files[0])} type="file" accept="image/jpeg, image/jpg, image/png" />
                 <button onClick={submit}>Post</button>
