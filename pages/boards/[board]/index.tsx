@@ -33,7 +33,8 @@ type BoardData = {
 }
 
 export async function getServerSideProps(context) {
-    const boardName: string = context.params.board[0]
+    const boardName: string = context.params.board
+    console.log(boardName)
 
     const board = await boardRepo.findById(boardName)
 
