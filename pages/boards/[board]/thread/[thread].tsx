@@ -111,7 +111,7 @@ const PostContainer = ({board,getPost,hover,post,main}: {board: string,hover?: b
                 <span onClick={addReplier} style={{cursor: 'pointer'}}>
                     No. {post.id}
                 </span>
-                <span className={styles.replies}>
+                <div className={styles.replies}>
                     {post.replies.map(r => (
                         <>
                             <a onMouseEnter={() => setShowHoverPost(r)} onMouseLeave={() => setShowHoverPost(null)} key={r} href={'#' + r} className={styles.postreply}>
@@ -122,17 +122,17 @@ const PostContainer = ({board,getPost,hover,post,main}: {board: string,hover?: b
                             }
                         </>
                     ))}
-                </span>
+                </div>
             </div>
             <div className={styles.timestamp}>
-            {imgref.current && (
+            {post.image && imgref.current && (
                 <span>File: <a target="_blank" rel="noreferrer" href={downloadurl}>{metadata.customMetadata['displayName']}</a> ({Math.floor(metadata.size / 1000)}KB {imgref.current['width']}x{imgref.current['height']})</span>
             )}
             </div>
             <div className={styles.content}>
-                {post.image && downloadurl && (
+                {post.image && (
                 <div onClick={() => setexpand(expand => !expand)} className={styles.image}>
-                    <img ref={imgref} src={downloadurl} alt="thumb" width={expand ? "100%" : main ? "250px" : "120px"}/>
+                    <img ref={imgref} style={{display: downloadurl ? 'initial' : 'none'}} src={downloadurl} alt="thumb" width={expand ? "100%" : main ? "250px" : "120px"}/>
                 </div>)}
                 
                 <div dangerouslySetInnerHTML={{__html: parseContent(post.content)}} className={styles.text} style={{clear: expand ? 'both' : 'none'}}>
@@ -236,7 +236,7 @@ const PostReply = ({hide,board,tid} : {hide: () => void,board: string,tid: strin
         <div ref={topref} className={styles.reply}>
             <div ref={touchref} className={styles.touchreply}>
                 Reply to Thread: No.{tid} 
-                <button onClick={hide} style={{float:'right'}}>X</button>
+                <button onClick={hide} style={{float:'right',cursor: 'pointer'}}>X</button>
             </div>
             <input value={name} onChange={ev => setname(ev.target.value)} className={styles.title} type="text" placeholder="Name" />
             <input className={styles.title} type="text" placeholder="Options" />
@@ -310,10 +310,12 @@ export default function Page({data: {board,title,posts}}: {data: ThreadProps}){
                     [Post a Reply]
                 </div>
                 <div className={styles.postcount}>
-                <span onClick={() => Router.push(`/boards/${board.id}`)} className={styles.postreplybtn} style={{marginLeft:0}} >[Catalog]</span> 
-                <span className={styles.tooltip}>{postState.filter(p => p.image).length} <span className={styles.tooltiptext}>images</span></span> / 
-                <span className={styles.tooltip}>{postState.length} <span className={styles.tooltiptext}>posts</span></span> / 
-                <span className={styles.tooltip}>{diffPosters(postState)}<span className={styles.tooltiptext}>users</span></span>
+                    <div onClick={() => scrollTo({behavior:'smooth',top:document.body.scrollHeight})} className={styles.btns}>[Bottom]</div> 
+                    <div onClick={() => Router.reload()} className={styles.btns}>[Refresh]</div> 
+                    <span onClick={() => Router.push(`/boards/${board.id}`)} className={styles.btns} >[Catalog]</span> 
+                    <span style={{marginLeft:'auto'}} className={styles.tooltip}>{postState.filter(p => p.image).length} <span className={styles.tooltiptext}>images</span></span> / 
+                    <span className={styles.tooltip}>{postState.length} <span className={styles.tooltiptext}>posts</span></span> / 
+                    <span className={styles.tooltip}>{diffPosters(postState)}<span className={styles.tooltiptext}>users</span></span>
                 </div>
                 {postState.map((p: Post,index: number) => (
                     <PostContainer key={p.id} {...({main: index === 0})} board={board.id} getPost={getPost} post={p} />

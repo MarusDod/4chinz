@@ -67,13 +67,25 @@
 .postcount {
     display: flex;
     flex-direction: row;
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: center;
     width: 100%;
     border-style: solid; 
     border-width: 1px 0;
     border-color: rgb(6, 6, 6,.2);
+}
 
+.postcount > .btns {
+    color: #81a2be;
+    margin: .5rem  0;
+    padding: 0 .2rem;
+    margin-left: 0;
+    font-size: 1rem;
+}
+
+.postcount > .btns:hover {
+    color: blue;
+    cursor: pointer;
 }
 
 .postreplybtn {

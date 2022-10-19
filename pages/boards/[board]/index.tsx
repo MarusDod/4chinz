@@ -185,6 +185,10 @@ export default function Page({data} : Record<"data",BoardData>){
         {shownewthread && (
             <CreateNewThread board={data.board} />
         )}
+        <div className={styles.postcount}>
+            <div onClick={() => scrollTo({behavior:'smooth',top:document.body.scrollHeight})} className={styles.postreplybtn} style={{marginLeft:0}}>[Bottom]</div> 
+            <div onClick={() => Router.reload()} className={styles.postreplybtn} style={{marginLeft:0}}>[Refresh]</div> 
+        </div>
         <div className={styles.threads}>
             {data.threads.map(t => (
                 <Thread key={t.head.id} thread={t} current={data.board.id} />
