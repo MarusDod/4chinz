@@ -95,6 +95,12 @@
     color:blue;
 }
 
+.hovercontainer {
+    z-index: 2;
+    position: absolute;
+    border: 1px solid black;
+}
+
 .postcontainer {
     padding: .5em;
     margin: 0 1em;

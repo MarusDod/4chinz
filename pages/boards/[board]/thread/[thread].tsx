@@ -8,12 +8,13 @@ import { Board, Post, Thread } from "../../../../lib/models"
 import { BoardMetadata } from "../../../_app"
 import styles from '../../../../styles/Thread.module.css'
 import { firestore, storage } from "../../../../lib/firebase"
-import { useEffect, useRef, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { FullMetadata, getDownloadURL, getMetadata, ref } from "firebase/storage"
-import { collection, onSnapshot, Query, query, Timestamp, where } from "firebase/firestore"
+import { collection, collectionGroup, doc, getDoc, onSnapshot, Query, query, Timestamp, where } from "firebase/firestore"
 import BoardTitle from "../../../../components/BoardTitle"
 import Router from "next/router"
 import { genUID } from "../../../../lib/helpers"
+import { renderToHTML } from "next/dist/server/render"
 
 type ThreadProps = {
     board: BoardMetadata,
@@ -36,8 +37,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext): Pr
     const uid: string = genUID(context.req as NextApiRequest,tid)
 
     const boardName: string = context.params.board as string
-    console.log('tid',tid)
-    console.log('board',boardName)
 
     const board: Board = await boardRepo.findById(boardName)
     const thread: Thread = await board.threads.findById(tid)
@@ -59,20 +58,27 @@ export async function getServerSideProps(context: GetServerSidePropsContext): Pr
     }
 }
 
-const PostContainer = ({board,post,main}: {board: string,post: Post,main: boolean}) => {
+const CommentContext = createContext(null)
+
+
+const PostContainer = ({board,getPost,hover,post,main}: {board: string,hover?: boolean,getPost?: (id: string) => Post,post: Post,main: boolean}) => {
     const [downloadurl,setdownloadurl] = useState<string | null>(null)
     const [metadata,setmetadata] = useState<FullMetadata | null>(null)
     const [expand,setexpand] = useState<boolean>(false)
+    const [,setComment] = useContext(CommentContext)
     const imgref = useRef()
 
+    const [showHoverPost,setShowHoverPost] = useState<string | null>(null)
+
     const parseContent = (content : string) => {
-        console.log('content',content)
         const strcolor = content
             .replace(/&gt;&gt;\d+/g, match=> `<a style="color:blue" href="#${match.substring(8)}">${match}</a>`)
             .replaceAll("\r\n","<br />")
 
         return strcolor
     }
+
+    const addReplier = () => setComment(comment => comment + `>>${post.id}\r\n`)
 
 
     useEffect(() => {
@@ -92,19 +98,28 @@ const PostContainer = ({board,post,main}: {board: string,post: Post,main: boolea
     },[post])
 
     return (
-        <div id={post.id} className={`${styles.postcontainer} ${main ? styles.mainpostcontainer: ''}`}>
+        <div id={post.id} className={`${styles.postcontainer} ${hover ? styles.hovercontainer : ''} ${main ? styles.mainpostcontainer: ''}`}>
             <div className={styles.timestamp}>
                 {main && (<span className={styles.title} style={{clear: expand ? 'both' : 'none'}}>
                     /{board}/ - {post.title}
                 </span>)}
                 <span>{post.poster.username == '' ? 'Anonymous' : post.poster.username}</span> 
                 <span style={{margin:"0 .5rem"}}>(ID: {post.poster.uid})</span>
-                <span>{`${moment(typeof post.createdAt === 'string' ? post.createdAt : post.createdAt.seconds).format("DD/MM/YYYY(ddd)hh:mm:ss")} No. ${post.id}`}</span>
+                <span>{`${moment(typeof post.createdAt === 'string' ? post.createdAt : post.createdAt.seconds).format("DD/MM/YYYY(ddd)hh:mm:ss")}`}
+                </span>
+                <span onClick={addReplier} style={{cursor: 'pointer'}}>
+                    No. {post.id}
+                </span>
                 <span className={styles.replies}>
                     {post.replies.map(r => (
-                        <a key={r} href={'#' + r} className={styles.postreply}>
-                            {'>>'}{r}
-                        </a>
+                        <>
+                            <a onMouseEnter={() => setShowHoverPost(r)} onMouseLeave={() => setShowHoverPost(null)} key={r} href={'#' + r} className={styles.postreply}>
+                                {'>>'}{r}
+                            </a>
+                            {showHoverPost &&
+                                <PostContainer board={board} post={getPost(r)} hover={true} main={false} />
+                            }
+                        </>
                     ))}
                 </span>
             </div>
@@ -126,11 +141,11 @@ const PostContainer = ({board,post,main}: {board: string,post: Post,main: boolea
     )
 }
 
-const PostReply = ({hide,referee,board,tid} : {hide: () => void,referee?: string,board: string,tid: string}) => {
+const PostReply = ({hide,board,tid} : {hide: () => void,board: string,tid: string}) => {
     const [showerr,setshowerr] = useState<boolean>(false)
     const [name,setname] = useState<string>("")
-    const [comment,setcomment] = useState<string>(referee ? `>>${referee}` : "")
     const [file,setfile] = useState<File | null>(null)
+    const [comment,setComment] = useContext(CommentContext)
 
     const topref = useRef()
     const touchref = useRef()
@@ -200,7 +215,7 @@ const PostReply = ({hide,referee,board,tid} : {hide: () => void,referee?: string
             .then(() => {
                 console.log('success')
                 setshowerr(false)
-                setcomment("")
+                setComment("")
                 setname("")
                 setfile(null)
                 hide()
@@ -219,7 +234,7 @@ const PostReply = ({hide,referee,board,tid} : {hide: () => void,referee?: string
             </div>
             <input value={name} onChange={ev => setname(ev.target.value)} className={styles.title} type="text" placeholder="Name" />
             <input className={styles.title} type="text" placeholder="Options" />
-            <textarea value={comment} onChange={ev => setcomment(ev.target.value)} className={`${styles.title} ${styles.comment}`} placeholder="Comment" />
+            <textarea value={comment} onChange={ev => setComment(ev.target.value)} className={`${styles.title} ${styles.comment}`} placeholder="Comment" />
             <div style={{display:'flex',margin:0,justifySelf:"flex-end",justifyContent:'space-between',fontSize:"1.5rem",color:'grey'}}>
                 <input onChange={ev => setfile(ev.target.files[0])} type="file" accept="image/jpeg, image/jpg, image/png" />
                 <button onClick={submit}>Post</button>
@@ -234,6 +249,14 @@ const PostReply = ({hide,referee,board,tid} : {hide: () => void,referee?: string
 export default function Page({data: {board,title,posts}}: {data: ThreadProps}){
     const [showreply,setshowreply] = useState<boolean>(false)
     const [postState,setPostState] = useState<Post[]>(posts.sort((a,b) => parseInt(a.id) - parseInt(b.id)))
+    const [comment,setcomment] = useState<string>('')
+
+    const setCommentWrap = comment => {
+        setshowreply(true)
+        setcomment(comment)
+    }
+
+    const getPost = useCallback(id => postState.find(p => p.id == id),[postState])
 
     useEffect(() => {
         let f = true
@@ -253,7 +276,6 @@ export default function Page({data: {board,title,posts}}: {data: ThreadProps}){
 
                     switch(c.type){
                         case 'added':
-                            console.log(data)
                             setPostState((postState: Post[]) => ([...postState,data as Post]))
                             break;
                         case 'modified':
@@ -276,24 +298,26 @@ export default function Page({data: {board,title,posts}}: {data: ThreadProps}){
 
     return (
         <Layout>
-            <BoardTitle board={board}/>
-            <div onClick={() => setshowreply(true)} className={styles.postreplybtn} style={{fontWeight:'bold',fontSize:'2.5rem'}}>
-                [Post a Reply]
-            </div>
-            <div className={styles.postcount}>
-               <span onClick={() => Router.push(`/boards/${board.id}`)} className={styles.postreplybtn} style={{marginLeft:0}} >[Catalog]</span> 
-               <span className={styles.tooltip}>{postState.filter(p => p.image).length} <span className={styles.tooltiptext}>images</span></span> / 
-               <span className={styles.tooltip}>{postState.length} <span className={styles.tooltiptext}>posts</span></span> / 
-               <span className={styles.tooltip}>{diffPosters(postState)}<span className={styles.tooltiptext}>users</span></span>
-            </div>
-            {postState.map((p: Post,index: number) => (
-                <PostContainer key={p.id} {...({main: index === 0})} board={board.id} post={p} />
-            ))}
-            {showreply && <PostReply hide={() => setshowreply(false)} board={board.id} tid={postState[0].id} />}
-            <div className={styles.postcount}>
-                <div onClick={() => setshowreply(true)} className={styles.postreplybtn}>[ post reply ]</div>
-                <div>{postState.length} / 0</div>
-            </div>
+            <CommentContext.Provider value={[comment,setCommentWrap]}>
+                <BoardTitle board={board}/>
+                <div onClick={() => setshowreply(true)} className={styles.postreplybtn} style={{fontWeight:'bold',fontSize:'2.5rem'}}>
+                    [Post a Reply]
+                </div>
+                <div className={styles.postcount}>
+                <span onClick={() => Router.push(`/boards/${board.id}`)} className={styles.postreplybtn} style={{marginLeft:0}} >[Catalog]</span> 
+                <span className={styles.tooltip}>{postState.filter(p => p.image).length} <span className={styles.tooltiptext}>images</span></span> / 
+                <span className={styles.tooltip}>{postState.length} <span className={styles.tooltiptext}>posts</span></span> / 
+                <span className={styles.tooltip}>{diffPosters(postState)}<span className={styles.tooltiptext}>users</span></span>
+                </div>
+                {postState.map((p: Post,index: number) => (
+                    <PostContainer key={p.id} {...({main: index === 0})} board={board.id} getPost={getPost} post={p} />
+                ))}
+                {showreply && <PostReply hide={() => setshowreply(false)} board={board.id} tid={postState[0].id} />}
+                <div className={styles.postcount}>
+                    <div onClick={() => setshowreply(true)} className={styles.postreplybtn}>[ post reply ]</div>
+                    <div>{postState.length} / 0</div>
+                </div>
+            </CommentContext.Provider>
         </Layout>
     )
 }
