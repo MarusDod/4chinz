@@ -32,11 +32,13 @@ const diffPosters = (posts: Post[]) => {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext): Promise<{props: {data: ThreadProps}}> {
-    const tid: string = context.params.thread[0]
+    const tid: string = context.params.thread as string
 
     const uid: string = genUID(context.req as NextApiRequest,tid)
 
-    const boardName: string = context.params.board[0]
+    const boardName: string = context.params.board as string
+    console.log('tid',tid)
+    console.log('board',boardName)
 
     const board = await boardRepo.findById(boardName)
     const thread: Thread = await board.threads.findById(tid)
