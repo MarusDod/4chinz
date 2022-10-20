@@ -43,6 +43,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             .replaceAll(/</g, "&lt;")
             .replaceAll(/>/g, "&gt;");
     newpost.title = subject
+            .replaceAll(/</g, "&lt;")
+            .replaceAll(/>/g, "&gt;");
     newpost.isThread = true
     newpost.replies = []
     newpost.createdAt = Timestamp.now()
