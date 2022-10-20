@@ -8,7 +8,7 @@ export default ({board} :{board: BoardMetadata}) => {
         <div className={styles.title}>
                 /{board.id}/ - <span style={{textTransform:'capitalize'}}>{board.name}</span>
             </div>
-        <div style={{borderBottom:"1px solid black",width:"90%"}}>
+        <div style={{borderBottom:"1px solid rgb(0,0,0,0.2)",width:"90%"}}>
         </div>
 </>
     )

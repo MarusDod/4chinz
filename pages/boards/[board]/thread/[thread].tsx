@@ -8,7 +8,7 @@ import { Board, Post, Thread } from "../../../../lib/models"
 import { BoardMetadata } from "../../../_app"
 import styles from '../../../../styles/Thread.module.css'
 import { firestore, storage } from "../../../../lib/firebase"
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import { createContext, useCallback, useContext, useDebugValue, useEffect, useMemo, useRef, useState } from "react"
 import { FullMetadata, getDownloadURL, getMetadata, ref } from "firebase/storage"
 import { collection, collectionGroup, doc, getDoc, onSnapshot, Query, query, Timestamp, where } from "firebase/firestore"
 import BoardTitle from "../../../../components/BoardTitle"
@@ -68,6 +68,7 @@ const PostContainer = ({board,getPost,hover,post,main}: {board: string,hover?: b
     const [expand,setexpand] = useState<boolean>(false)
     const [,setComment] = useContext(CommentContext)
     const imgref = useRef()
+    const fileSize = useMemo(() => !metadata ? '0KB' : metadata.size > 1000000 ? `${Math.floor(metadata.size/1000000)}MB` : `${Math.floor(metadata.size/1000)}KB`,[metadata])
 
     const [showHoverPost,setShowHoverPost] = useState<string | null>(null)
 
@@ -98,7 +99,7 @@ const PostContainer = ({board,getPost,hover,post,main}: {board: string,hover?: b
                 </span>)}
                 <span>{post.poster.username == '' ? 'Anonymous' : post.poster.username}</span> 
                 <span style={{margin:"0 .5rem"}}>(ID: {post.poster.uid})</span>
-                <span>{`${moment(typeof post.createdAt === 'string' ? post.createdAt : post.createdAt.seconds).format("DD/MM/YYYY(ddd)hh:mm:ss")}`}
+                <span>{`${moment(typeof post.createdAt === 'string' ? post.createdAt : post.createdAt.seconds).utcOffset('GMT').format("DD/MM/YYYY(ddd)HH:mm:ss")}`}
                 </span>
                 <span onClick={addReplier} style={{cursor: 'pointer'}}>
                     No. {post.id}
@@ -117,8 +118,8 @@ const PostContainer = ({board,getPost,hover,post,main}: {board: string,hover?: b
                 </div>
             </div>
             <div className={styles.timestamp}>
-            {post.image && imgref.current && (
-                <span>File: <a target="_blank" rel="noreferrer" href={downloadurl}>{metadata.customMetadata['displayName']}</a> ({Math.floor(metadata.size / 1000)}KB {imgref.current['width']}x{imgref.current['height']})</span>
+            {post.image && imgref.current && metadata && (
+                <span>File: <a target="_blank" rel="noreferrer" href={downloadurl}>{metadata.customMetadata['displayName']}</a> ({fileSize} {imgref.current['width']}x{imgref.current['height']})</span>
             )}
             </div>
             <div className={styles.content}>
