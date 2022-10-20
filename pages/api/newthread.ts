@@ -51,8 +51,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         username: username
     }
 
-    if(thumbnail)
+    if(thumbnail){
+        if(!['image/jpeg','image/jpg','image/png','gif'].includes(thumbnail.mimetype)){
+            res.json({message: 'err',reason: 'invalid mimetype'})
+            return
+        }
         newpost.image = await uploadToStorage(thumbnail,newpost.id)
+    }
 
 
     const thread = await board.threads.create(newthread)
@@ -63,7 +68,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             res.status(500).send({})
         })
         .then(() => {
-            res.status(200).send({message: newpost.id})
+            res.status(200).send({message: 'ok',tid: newpost.id})
         })
 
 }

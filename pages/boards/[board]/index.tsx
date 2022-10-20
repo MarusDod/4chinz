@@ -136,10 +136,17 @@ const CreateNewThread = ({board} : {board: BoardMetadata}) => {
             body: formData
         })
             .then(async res => {
-                const tid = (await res.json())
-                console.log('success')
-                setshowerr("")
-                Router.push(`/boards/${board.id}/thread/${tid.message}`)
+                const data = await res.json()
+                if(data.message != 'ok'){
+                    setshowerr(data.reason)
+                }
+                else {
+                    const tid = data.tid
+                    console.log('success')
+                    setshowerr("")
+                    Router.push(`/boards/${board.id}/thread/${tid}`)
+                }
+
                 setDisablePost(false)
             })
             .catch(err => {

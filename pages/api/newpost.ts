@@ -45,8 +45,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         id: (await firestore.collection('variables').doc('counter').get()).data().value.toString()
     }
 
-    if(thumbnail)
+    if(thumbnail){
+        if(!['image/jpeg','image/jpg','image/png','gif'].includes(thumbnail.mimetype)){
+            res.json({message: 'err',reason: 'invalid mimetype'})
+            return
+        }
         post.image = await uploadToStorage(thumbnail,post.id)
+    }
 
     console.log('post',post)
 
@@ -71,7 +76,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     thread.posts.create(post)
         .catch(err => {
             console.error(err)
-            res.json({message:'err'})
+            res.json({message:'err',reason: 'internal server error'})
         })
         .then(() => {
             res.json({message: 'ok'})

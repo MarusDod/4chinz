@@ -143,7 +143,7 @@ const PostContainer = ({board,getPost,hover,post,main}: {board: string,hover?: b
 }
 
 const PostReply = ({hide,board,tid} : {hide: () => void,board: string,tid: string}) => {
-    const [showerr,setshowerr] = useState<boolean>(false)
+    const [showerr,setshowerr] = useState<string | null>(null)
     const [name,setname] = useState<string>("")
     const [file,setfile] = useState<File | null>(null)
     const [disablePost,setDisablePost] = useState<boolean>(false)
@@ -216,19 +216,25 @@ const PostReply = ({hide,board,tid} : {hide: () => void,board: string,tid: strin
             method: 'POST',
             body: formData
         })
-            .then(() => {
-                console.log('success')
-                setshowerr(false)
+            .then(async res => {
+                const msg = await res.json()
+                if(msg.message != 'ok'){
+                    setshowerr(msg.reason)
+                }
+                else {
+                    console.log('success')
+                    setshowerr(null)
+                    setComment("")
+                    setname("")
+                    setfile(null)
+                    hide()
+                }
                 setDisablePost(false)
-                setComment("")
-                setname("")
-                setfile(null)
-                hide()
             })
             .catch(err => {
                 console.error('error',err)
                 setDisablePost(false)
-                setshowerr(true)
+                setshowerr(null)
             })
     }
 
@@ -246,7 +252,7 @@ const PostReply = ({hide,board,tid} : {hide: () => void,board: string,tid: strin
                 <button disabled={disablePost} onClick={_.debounce(submit,1000)}>Post</button>
             </div>
             <div className={styles.error} style={{display: showerr ? 'inline-block':'none'}}>
-                err
+                {showerr}
             </div>
         </div>
     )
