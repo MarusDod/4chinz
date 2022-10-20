@@ -14,6 +14,7 @@ import { getDownloadURL, ref } from 'firebase/storage'
 import { firestore, storage } from '../../../lib/firebase'
 import _ from 'lodash'
 import { collection, getCountFromServer, query, where } from 'firebase/firestore'
+import { parseContent } from '../../../lib/helpers'
 
 /*export function getStaticPaths(){
     return {
@@ -99,8 +100,7 @@ const Thread = ({current,thread} : {current: string,thread: ThreadInfo}) => {
             <div className={styles.title}>
                 {thread.title}
             </div>
-            <div className={styles.headline}>
-                {thread.head.content}
+            <div className={styles.headline} dangerouslySetInnerHTML={{__html: parseContent(thread.head.content)}}>
             </div>
         </div>
     )

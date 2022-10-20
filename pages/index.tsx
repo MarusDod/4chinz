@@ -30,10 +30,10 @@ export default function Home() {
         />
       <div className={styles.boards}>
         <div className={styles.title}>
-          What is this? you ask
+          What is this?
         </div>
         <div style={{margin:'1rem'}}>
-          I have no idea either
+          4chan with no jews and jannies. seethe cope and, above all, dilate
         </div>
       </div>
       <div className={styles.boards}>

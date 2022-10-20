@@ -14,3 +14,12 @@ export function genUID(req: NextApiRequest,tid: string): string {
 
     return uid.slice(0,half)
 }
+
+export function parseContent(content: string): string {
+    const strcolor = content
+        .replace(/&gt;&gt;\d+/g, match=> `<a style="color:blue" href="#${match.substring(8)}">>>${match.substring(8)}</a>`)
+        .replace(/&gt;(?!&gt;).*\r\n/g,match => `<span style="color:green">${match}</span>`)
+        .replaceAll("\r\n","<br />")
+
+    return strcolor
+}

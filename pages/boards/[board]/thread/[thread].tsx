@@ -13,7 +13,7 @@ import { FullMetadata, getDownloadURL, getMetadata, ref } from "firebase/storage
 import { collection, collectionGroup, doc, getDoc, onSnapshot, Query, query, Timestamp, where } from "firebase/firestore"
 import BoardTitle from "../../../../components/BoardTitle"
 import Router from "next/router"
-import { genUID } from "../../../../lib/helpers"
+import { genUID, parseContent } from "../../../../lib/helpers"
 import { renderToHTML } from "next/dist/server/render"
 import _ from 'lodash'
 
@@ -70,14 +70,6 @@ const PostContainer = ({board,getPost,hover,post,main}: {board: string,hover?: b
     const imgref = useRef()
 
     const [showHoverPost,setShowHoverPost] = useState<string | null>(null)
-
-    const parseContent = (content : string) => {
-        const strcolor = content
-            .replace(/&gt;&gt;\d+/g, match=> `<a style="color:blue" href="#${match.substring(8)}">${match}</a>`)
-            .replaceAll("\r\n","<br />")
-
-        return strcolor
-    }
 
     const addReplier = () => setComment(comment => comment + `>>${post.id}\r\n`)
 
