@@ -124,9 +124,8 @@ const PostContainer = ({board,getPost,hover,post,main}: {board: string,hover?: b
             </div>
             <div className={styles.content}>
                 {post.image && (
-                <div onClick={() => setexpand(expand => !expand)} className={styles.image}>
-                    <img ref={imgref} style={{display: downloadurl ? 'initial' : 'none'}} src={downloadurl} alt="thumb" width={expand ? "100%" : main ? "250px" : "120px"}/>
-                </div>)}
+                    <img onClick={() => setexpand(expand => !expand)} className={styles.image} ref={imgref} style={{display: downloadurl ? 'initial' : 'none'}} src={downloadurl} alt="thumb" width={expand ? "auto" : main ? "250px" : "120px"}/>
+                )}
                 
                 <div dangerouslySetInnerHTML={{__html: parseContent(post.content)}} className={styles.text} style={{clear: expand ? 'both' : 'none'}}>
                 </div>

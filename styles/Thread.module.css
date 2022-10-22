@@ -115,6 +115,8 @@
 .postcontainer {
     padding: .5em;
     margin: 0 1em;
+    max-width: 99vw;
+    box-sizing: border-box;
     max-width: 100%;
     gap:.5em;
     display: flex;
@@ -142,18 +144,15 @@
 }
 
 .postcontainer .content {
-    display:inline-block;
+    display:block;
     justify-self: flex-end;
-
-    overflow: hidden;
+    overflow: auto;
 }
 
 .postcontainer .image{
-    display: flex;
     margin: 0 1rem 0 0;
-    flex-direction: column;
     float: left;
-    cursor: pointer;;
+    cursor: pointer;
 }
 
 .postcontainer .title {
@@ -170,8 +169,12 @@
     display:block;
     font-family: arial,helvetica,sans-serif;
     font-size: 1rem;
-    word-wrap: break-word;
-    white-space: normal;
+    word-wrap: break-all;
+    white-space: pre-line;
+}
+
+.postcontainer .text a{
+    color:rgb(0, 106, 255)
 }
 
 
